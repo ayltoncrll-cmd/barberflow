@@ -33,7 +33,15 @@ const STORAGE_KEYS = {
   BUSINESS_HOURS: 'barberflow_business_hours',
   PROFESSIONAL_SCHEDULES: 'barberflow_prof_schedules',
   HOLIDAYS: 'barberflow_holidays',
+  ACCOUNT: 'barberflow_account',
 };
+
+export interface StoredAccount {
+  email: string;
+  password: string;
+  ownerName: string;
+  createdAt: string;
+}
 
 const FICTITIOUS_NAMES = ['Felipe Alcantara', 'Guilherme Rocha', 'Rodrigo Santoro'];
 
@@ -60,6 +68,28 @@ class BarberFlowStore {
   clearAllData(): void {
     if (typeof window === 'undefined') return;
     Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k));
+  }
+
+  // ACCOUNT (credenciais de acesso do dono da barbearia)
+  getAccount(): StoredAccount | null {
+    return this.getStorage<StoredAccount | null>(STORAGE_KEYS.ACCOUNT, null);
+  }
+
+  saveAccount(account: Omit<StoredAccount, 'createdAt'>): StoredAccount {
+    const stored: StoredAccount = { ...account, createdAt: new Date().toISOString() };
+    this.setStorage(STORAGE_KEYS.ACCOUNT, stored);
+    return stored;
+  }
+
+  authenticate(email: string, password: string): { success: boolean; message?: string } {
+    const account = this.getAccount();
+    if (!account) {
+      return { success: false, message: 'Nenhuma conta cadastrada neste navegador. Cadastre sua barbearia primeiro.' };
+    }
+    if (account.email.trim().toLowerCase() !== email.trim().toLowerCase() || account.password !== password) {
+      return { success: false, message: 'E-mail ou senha inválidos.' };
+    }
+    return { success: true };
   }
 
   // BARBERSHOP

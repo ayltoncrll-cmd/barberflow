@@ -3,20 +3,33 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scissors, ShieldCheck, UserCheck, Key, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Scissors, ShieldCheck, UserCheck, Key, ArrowRight, CheckCircle2, Eye, EyeOff, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { mockStore } from '@/lib/store/mockStore';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('dono@barbeariaimperial.com');
   const [password, setPassword] = useState('123456');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      const account = mockStore.getAccount();
+      // Só valida credenciais se o dono já criou uma senha no cadastro.
+      if (account) {
+        const result = mockStore.authenticate(email, password);
+        if (!result.success) {
+          setError(result.message || 'Não foi possível entrar.');
+          return;
+        }
+      }
       router.push('/dashboard');
     }, 600);
   };
@@ -99,15 +112,32 @@ export default function LoginPage() {
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Senha</label>
               <a href="#" className="text-xs text-amber-400 hover:underline">Esqueceu a senha?</a>
             </div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className="w-full px-4 pr-12 py-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                className="absolute right-3.5 top-3.5 text-slate-500 hover:text-amber-400 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
+
+          {error && (
+            <p className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+              <XCircle className="w-4 h-4 shrink-0" /> {error}
+            </p>
+          )}
 
           <Button type="submit" variant="gold" className="w-full text-base py-3" isLoading={isLoading}>
             Entrar no Sistema <ArrowRight className="w-4 h-4 ml-1" />

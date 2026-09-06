@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scissors, CheckCircle2, ArrowRight, Building, Phone, MapPin, Clock, Sparkles } from 'lucide-react';
+import { Scissors, CheckCircle2, ArrowRight, Building, Phone, MapPin, Clock, Sparkles, Lock, Eye, EyeOff, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { mockStore } from '@/lib/store/mockStore';
 
@@ -11,12 +11,17 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
     name: 'Barbearia Vintage',
     ownerName: 'Ricardo Santos',
     phone: '(11) 99888-7766',
     email: 'contato@barbeariavintage.com',
+    password: '',
+    confirmPassword: '',
     city: 'São Paulo',
     state: 'SP',
     address: 'Rua Augusta, 500 - Consolação',
@@ -31,15 +36,45 @@ export default function OnboardingPage() {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
 
+  const passwordRules = [
+    { label: 'Mínimo de 8 caracteres', valid: formData.password.length >= 8 },
+    { label: 'Uma letra maiúscula', valid: /[A-Z]/.test(formData.password) },
+    { label: 'Uma letra minúscula', valid: /[a-z]/.test(formData.password) },
+    { label: 'Um número', valid: /[0-9]/.test(formData.password) },
+  ];
+
+  const passwordScore = passwordRules.filter((r) => r.valid).length;
+  const isPasswordValid = passwordScore === passwordRules.length;
+  const passwordsMatch = formData.password.length > 0 && formData.password === formData.confirmPassword;
+
+  const strengthLabel = ['Muito fraca', 'Fraca', 'Razoável', 'Boa', 'Forte'][passwordScore];
+  const strengthColor = ['bg-slate-700', 'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-emerald-500'][passwordScore];
+  const strengthTextColor = ['text-slate-500', 'text-red-400', 'text-orange-400', 'text-yellow-400', 'text-emerald-400'][passwordScore];
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     if (step === 1) {
+      if (!isPasswordValid) {
+        setError('Sua senha ainda não atende a todos os requisitos de segurança.');
+        return;
+      }
+      if (!passwordsMatch) {
+        setError('As senhas não conferem. Digite a mesma senha nos dois campos.');
+        return;
+      }
       setStep(2);
       return;
     }
 
     setIsLoading(true);
     setTimeout(() => {
+      mockStore.saveAccount({
+        email: formData.email,
+        password: formData.password,
+        ownerName: formData.ownerName,
+      });
       mockStore.updateBarbershop({
         name: formData.name,
         slug: slug || 'minha-barbearia',
@@ -150,6 +185,100 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
+              <div className="pt-2 border-t border-slate-800 space-y-4">
+                <div className="flex items-center gap-2 text-xs font-semibold text-amber-400 uppercase tracking-wider">
+                  <Lock className="w-4 h-4" /> Crie sua senha de acesso
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Senha</label>
+                  <div className="relative">
+                    <Lock className="w-5 h-5 text-slate-500 absolute left-3.5 top-3.5" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                      autoComplete="new-password"
+                      className="w-full pl-11 pr-12 py-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      className="absolute right-3.5 top-3.5 text-slate-500 hover:text-amber-400 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+
+                  {formData.password && (
+                    <div className="mt-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${strengthColor}`}
+                            style={{ width: `${(passwordScore / passwordRules.length) * 100}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-semibold ${strengthTextColor}`}>{strengthLabel}</span>
+                      </div>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                        {passwordRules.map((rule) => (
+                          <li
+                            key={rule.label}
+                            className={`flex items-center gap-1.5 text-xs ${rule.valid ? 'text-emerald-400' : 'text-slate-500'}`}
+                          >
+                            {rule.valid ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                            {rule.label}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Confirmar Senha</label>
+                  <div className="relative">
+                    <Lock className="w-5 h-5 text-slate-500 absolute left-3.5 top-3.5" />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      required
+                      autoComplete="new-password"
+                      className={`w-full pl-11 pr-12 py-3 rounded-xl bg-slate-900/90 border text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 text-sm ${
+                        formData.confirmPassword && !passwordsMatch
+                          ? 'border-red-500/70 focus:border-red-500 focus:ring-red-500'
+                          : 'border-slate-800 focus:border-amber-500 focus:ring-amber-500'
+                      }`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      aria-label={showConfirmPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      className="absolute right-3.5 top-3.5 text-slate-500 hover:text-amber-400 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {formData.confirmPassword && (
+                    <p className={`mt-2 flex items-center gap-1.5 text-xs ${passwordsMatch ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {passwordsMatch ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                      {passwordsMatch ? 'As senhas conferem' : 'As senhas não conferem'}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {error && (
+                <p className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                  <XCircle className="w-4 h-4 shrink-0" /> {error}
+                </p>
+              )}
               <Button type="submit" variant="gold" className="w-full text-base py-3">
                 Próximo Passo <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
