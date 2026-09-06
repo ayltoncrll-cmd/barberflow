@@ -1,20 +1,18 @@
 import React from 'react';
 import Link from 'next/link';
-import { 
-  Scissors, 
-  Calendar, 
-  TrendingUp, 
-  Users, 
-  ShieldCheck, 
-  Smartphone, 
-  MessageSquare, 
-  Award, 
+import {
+  Scissors,
+  Calendar,
+  TrendingUp,
+  Users,
+  ShieldCheck,
+  Smartphone,
+  MessageSquare,
+  Award,
   ArrowRight,
   CheckCircle2,
   Sparkles,
   Zap,
-  Clock,
-  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -35,9 +33,7 @@ export default function SaaSPage() {
 
           <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
             <a href="#recursos" className="hover:text-amber-400 transition-colors">Recursos</a>
-            <a href="#publica" className="hover:text-amber-400 transition-colors">Página Pública</a>
             <a href="#planos" className="hover:text-amber-400 transition-colors">Planos & Preços</a>
-            <a href="#depoimentos" className="hover:text-amber-400 transition-colors">Depoimentos</a>
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -77,14 +73,9 @@ export default function SaaSPage() {
                 Testar Grátis por 14 Dias <ArrowRight className="w-5 h-5 ml-1" />
               </Button>
             </Link>
-            <Link href="/barbearia/barbearia-imperial" className="w-full sm:w-auto">
+            <Link href="/login" className="w-full sm:w-auto">
               <Button variant="outline" size="lg" className="w-full text-base px-8 py-4">
-                Ver Agendamento do Cliente (Demo)
-              </Button>
-            </Link>
-            <Link href="/dashboard" className="w-full sm:w-auto">
-              <Button variant="secondary" size="lg" className="w-full text-base px-8 py-4">
-                Painel do Gerente (Demo)
+                Já tenho conta
               </Button>
             </Link>
           </div>
@@ -97,8 +88,8 @@ export default function SaaSPage() {
                 <div className="w-3 h-3 rounded-full bg-amber-500/80" />
                 <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
               </div>
-              <span className="font-mono text-slate-500">app.barberflow.com/barbearia/barbearia-imperial</span>
-              <span className="hidden sm:inline bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded text-[10px] font-semibold uppercase">Ambiente Isolado (Multi-tenant)</span>
+              <span className="font-mono text-slate-500">barberflow.com/barbearia/sua-barbearia</span>
+              <span className="hidden sm:inline bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded text-[10px] font-semibold uppercase">Prévia da interface</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
@@ -107,9 +98,9 @@ export default function SaaSPage() {
                   <span className="text-xs font-semibold text-slate-400 uppercase">Faturamento Hoje</span>
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
                 </div>
-                <div className="text-3xl font-bold text-white">R$ 1.840,00</div>
+                <div className="text-2xl font-bold text-white">Caixa do dia</div>
                 <div className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-                  <span>+28% em relação a ontem</span>
+                  <span>Comparativo automático com o dia anterior</span>
                 </div>
               </div>
 
@@ -118,8 +109,8 @@ export default function SaaSPage() {
                   <span className="text-xs font-semibold text-slate-400 uppercase">Atendimentos Hoje</span>
                   <Calendar className="w-4 h-4 text-amber-400" />
                 </div>
-                <div className="text-3xl font-bold text-white">24 agendamentos</div>
-                <div className="text-xs text-amber-400 mt-1">18 concluídos · 6 a atender</div>
+                <div className="text-2xl font-bold text-white">Agenda do dia</div>
+                <div className="text-xs text-amber-400 mt-1">Concluídos e a atender, em tempo real</div>
               </div>
 
               <div className="glass-card p-5 rounded-xl border border-slate-800">
@@ -127,8 +118,8 @@ export default function SaaSPage() {
                   <span className="text-xs font-semibold text-slate-400 uppercase">Comissões a Pagar</span>
                   <Users className="w-4 h-4 text-purple-400" />
                 </div>
-                <div className="text-3xl font-bold text-white">R$ 828,00</div>
-                <div className="text-xs text-slate-400 mt-1">3 barbeiros ativos</div>
+                <div className="text-2xl font-bold text-white">Comissões</div>
+                <div className="text-xs text-slate-400 mt-1">Calculadas por barbeiro automaticamente</div>
               </div>
             </div>
           </div>

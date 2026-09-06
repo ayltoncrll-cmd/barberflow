@@ -75,12 +75,13 @@ export default function AdminConfiguracoesPage() {
           <Database className="w-4 h-4 text-purple-400" /> Dados da plataforma
         </h2>
         <p className="text-sm text-slate-400 mb-4">
-          Os dados do painel administrativo estão em modo de demonstração, salvos no navegador. A camada de dados fica
-          isolada em <code className="text-purple-300 bg-slate-900 px-1.5 py-0.5 rounded text-xs">adminData.ts</code>,
-          pronta para ser trocada pelo Supabase sem alterar as telas.
+          A plataforma começa sem nenhuma barbearia: elas aparecem aqui conforme se cadastram pelo site ou são
+          criadas por você em Barbearias. A camada de dados fica isolada em{' '}
+          <code className="text-purple-300 bg-slate-900 px-1.5 py-0.5 rounded text-xs">adminData.ts</code>, pronta
+          para ser trocada pelo Supabase sem alterar as telas.
         </p>
         <Button variant="danger" size="sm" onClick={() => setConfirmReset(true)}>
-          <RotateCcw className="w-4 h-4" /> Restaurar dados de demonstração
+          <RotateCcw className="w-4 h-4" /> Limpar todas as barbearias
         </Button>
       </section>
 
@@ -102,19 +103,19 @@ export default function AdminConfiguracoesPage() {
 
       <ConfirmDialog
         isOpen={confirmReset}
-        title="Restaurar dados de demonstração"
+        title="Limpar todas as barbearias"
         message={
           <>
-            Isso recria as barbearias, planos e assinaturas de exemplo do painel administrativo, descartando as
-            alterações feitas aqui. <strong className="text-white">Os dados da barbearia no /dashboard não são afetados.</strong>
+            Isso apaga <strong className="text-white">todas</strong> as barbearias e assinaturas do painel
+            administrativo e restaura os planos padrão. A ação é definitiva.
           </>
         }
-        confirmLabel="Restaurar dados"
+        confirmLabel="Limpar tudo"
         variant="danger"
         onConfirm={() => {
-          adminData.resetSeed();
+          adminData.resetAll();
           setConfirmReset(false);
-          setToast({ type: 'success', message: 'Dados de demonstração restaurados.' });
+          setToast({ type: 'success', message: 'Painel limpo. Nenhuma barbearia cadastrada.' });
         }}
         onClose={() => setConfirmReset(false)}
       />

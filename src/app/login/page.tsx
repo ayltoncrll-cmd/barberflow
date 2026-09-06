@@ -3,15 +3,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scissors, ShieldCheck, UserCheck, Key, ArrowRight, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
+import { Scissors, ArrowRight, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { mockStore, DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '@/lib/store/mockStore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('dono@barbeariaimperial.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 

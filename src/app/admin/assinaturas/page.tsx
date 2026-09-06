@@ -105,7 +105,14 @@ export default function AdminAssinaturasPage() {
 
       <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyState message="Nenhuma assinatura encontrada." hint="Ajuste a busca ou os filtros." />
+          rows.length === 0 ? (
+            <EmptyState
+              message="Nenhuma assinatura ainda."
+              hint="Cada barbearia cadastrada gera uma assinatura automaticamente."
+            />
+          ) : (
+            <EmptyState message="Nenhuma assinatura encontrada." hint="Ajuste a busca ou os filtros." />
+          )
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">

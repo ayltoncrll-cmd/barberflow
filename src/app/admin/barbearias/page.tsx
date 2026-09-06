@@ -156,10 +156,17 @@ export default function AdminBarbeariasPage() {
       {/* Tabela */}
       <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyState
-            message="Nenhuma barbearia encontrada."
-            hint="Ajuste a busca ou os filtros para ver outros resultados."
-          />
+          rows.length === 0 ? (
+            <EmptyState
+              message="Nenhuma barbearia cadastrada ainda."
+              hint={'As barbearias aparecem aqui ao se cadastrarem pelo site, ou use "Nova Barbearia" acima.'}
+            />
+          ) : (
+            <EmptyState
+              message="Nenhuma barbearia encontrada."
+              hint="Ajuste a busca ou os filtros para ver outros resultados."
+            />
+          )
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">

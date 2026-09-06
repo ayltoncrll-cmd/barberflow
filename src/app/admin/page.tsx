@@ -9,14 +9,15 @@ import {
   AlertTriangle,
   PauseCircle,
   XCircle,
-  TrendingUp,
   CalendarClock,
   ArrowRight,
   Sparkles,
+  Plus,
 } from 'lucide-react';
 import { adminData } from '@/lib/admin/adminData';
 import { formatCurrency, formatDateBR } from '@/lib/utils/formatters';
 import { StatCard, StatusBadge, ExpiryBadge, AdminLoading, EmptyState } from '@/components/admin/AdminUI';
+import { Button } from '@/components/ui/Button';
 
 type Metrics = ReturnType<typeof adminData.getDashboardMetrics>;
 
@@ -28,6 +29,45 @@ export default function AdminDashboardPage() {
   }, []);
 
   if (!metrics) return <AdminLoading label="Carregando métricas da plataforma..." />;
+
+  // Plataforma ainda sem nenhuma barbearia cadastrada.
+  if (metrics.total === 0) {
+    return (
+      <div className="space-y-8">
+        <header>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold uppercase tracking-wider border border-purple-500/30">
+              Administração BarberFlow
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Visão geral da plataforma</h1>
+        </header>
+
+        <div className="glass-panel rounded-2xl border border-slate-800 p-10 sm:p-14 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto mb-5">
+            <Building2 className="w-8 h-8 text-purple-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Nenhuma barbearia cadastrada ainda</h2>
+          <p className="text-sm text-slate-400 mt-2 max-w-md mx-auto">
+            As barbearias aparecem aqui automaticamente quando se cadastram pelo site. Você também pode criar uma
+            manualmente para começar.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
+            <Link href="/admin/barbearias">
+              <Button variant="gold" className="w-full sm:w-auto">
+                <Plus className="w-4 h-4" /> Cadastrar primeira barbearia
+              </Button>
+            </Link>
+            <Link href="/admin/planos">
+              <Button variant="secondary" className="w-full sm:w-auto">
+                Revisar planos
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

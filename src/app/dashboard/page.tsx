@@ -2,17 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  DollarSign, 
-  Calendar, 
-  Users, 
-  TrendingUp, 
-  Scissors, 
-  Clock, 
-  ArrowRight, 
+import {
+  DollarSign,
+  Calendar,
+  TrendingUp,
+  Scissors,
+  Clock,
+  ArrowRight,
   Sparkles,
   CheckCircle2,
-  Plus
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';

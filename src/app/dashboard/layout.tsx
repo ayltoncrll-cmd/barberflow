@@ -3,24 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Scissors, 
-  Users, 
-  UserCheck, 
-  DollarSign, 
-  Clock, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Scissors,
+  Users,
+  UserCheck,
+  DollarSign,
+  Clock,
+  Settings,
   ExternalLink,
   Menu,
   X,
   LogOut,
-  Sparkles,
-  Award,
-  Loader2
+  Loader2,
 } from 'lucide-react';
-import { mockBarbershop } from '@/lib/store/mockData';
+import { mockStore } from '@/lib/store/mockStore';
 import { adminData } from '@/lib/admin/adminData';
 
 const navItems = [
@@ -39,6 +37,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accessChecked, setAccessChecked] = useState(false);
+  const [shop, setShop] = useState({ name: 'Minha Barbearia', slug: 'minha-barbearia' });
+  const [owner, setOwner] = useState({ name: 'Responsável', initials: 'MB' });
 
   // Bloqueio por assinatura: status + datas decidem o acesso (nunca só a data).
   useEffect(() => {
@@ -47,6 +47,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       router.replace('/assinatura-indisponivel');
       return;
     }
+
+    const current = mockStore.getBarbershop();
+    setShop({ name: current.name, slug: current.slug });
+
+    const session = mockStore.getSession();
+    const ownerName = session?.name || mockStore.getAccount()?.ownerName || null;
+    if (ownerName) {
+      const initials = ownerName
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join('')
+        .toUpperCase();
+      setOwner({ name: ownerName, initials: initials || 'RS' });
+    }
+
     setAccessChecked(true);
   }, [router]);
 
@@ -70,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-white text-lg leading-tight">BarberFlow</span>
-              <span className="text-[10px] text-amber-400 font-mono font-semibold uppercase tracking-wider">{mockBarbershop.name}</span>
+              <span className="text-[10px] text-amber-400 font-mono font-semibold uppercase tracking-wider truncate max-w-[140px]">{shop.name}</span>
             </div>
           </Link>
         </div>
@@ -78,7 +95,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Public Booking Link Badge */}
         <div className="px-4 py-3 border-b border-slate-800/60 bg-amber-500/5">
           <a
-            href={`/barbearia/${mockBarbershop.slug}`}
+            href={`/barbearia/${shop.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/30 text-amber-400 text-xs font-semibold transition-colors group"
@@ -113,17 +130,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* User Profile Footer */}
         <div className="p-4 border-t border-slate-800/80 bg-slate-900/40 flex items-center justify-between">
           <div className="flex items-center space-x-3 truncate">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs border border-amber-500/30">
-              RI
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs border border-amber-500/30 shrink-0">
+              {owner.initials}
             </div>
             <div className="truncate">
-              <div className="text-xs font-semibold text-white truncate">Roberto Imperial</div>
+              <div className="text-xs font-semibold text-white truncate">{owner.name}</div>
               <div className="text-[10px] text-slate-400 truncate">Dono / Gerente</div>
             </div>
           </div>
-          <Link href="/login" className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors" title="Sair">
+          <button
+            onClick={() => {
+              mockStore.clearSession();
+              router.push('/login');
+            }}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-slate-800 transition-colors"
+            title="Sair"
+          >
             <LogOut className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -160,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </nav>
             </div>
             <a
-              href={`/barbearia/${mockBarbershop.slug}`}
+              href={`/barbearia/${shop.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold text-center text-xs flex items-center justify-center gap-2"
@@ -178,8 +202,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-slate-300">
             <Menu className="w-6 h-6" />
           </button>
-          <span className="font-bold text-amber-400 text-sm">{mockBarbershop.name}</span>
-          <a href={`/barbearia/${mockBarbershop.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400">
+          <span className="font-bold text-amber-400 text-sm truncate max-w-[180px]">{shop.name}</span>
+          <a href={`/barbearia/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-400">
             <ExternalLink className="w-5 h-5" />
           </a>
         </header>

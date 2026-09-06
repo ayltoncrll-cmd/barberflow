@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Building, Phone, MapPin, Award, CheckCircle2, Save, Clock, Calendar, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Settings, Building, Award, CheckCircle2, Save, Clock, Calendar, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { mockStore } from '@/lib/store/mockStore';

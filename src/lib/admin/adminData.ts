@@ -18,7 +18,7 @@ import {
   Subscription,
   SubscriptionStatus,
 } from '@/types';
-import { mockSaaSPlans, mockBarbershop } from '@/lib/store/mockData';
+import { mockSaaSPlans } from '@/lib/store/mockData';
 import { mockStore } from '@/lib/store/mockStore';
 import { addDays, getDaysRemaining, hasActiveAccess } from '@/lib/utils/subscription';
 
@@ -36,208 +36,6 @@ type UsageMap = Record<string, AdminUsageStats>;
 
 function iso(daysFromNow: number): string {
   return addDays(new Date(), daysFromNow);
-}
-
-function makeSubscription(
-  barbershopId: string,
-  planId: string,
-  status: SubscriptionStatus,
-  startDaysAgo: number,
-  endInDays: number
-): Subscription {
-  const startsAt = iso(-startDaysAgo);
-  return {
-    id: `sub-${barbershopId}`,
-    barbershopId,
-    planId,
-    status,
-    startsAt,
-    trialEndsAt: status === 'TRIAL' ? iso(endInDays) : addDays(startsAt, 14),
-    currentPeriodEnd: iso(endInDays),
-    createdAt: startsAt,
-    updatedAt: new Date().toISOString(),
-  };
-}
-
-/** Barbearias de exemplo para o painel ter volume realista. */
-function seedBarbershops(): { shops: Barbershop[]; owners: OwnerMap; usage: UsageMap } {
-  const base: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    owner: string;
-    phone: string;
-    email: string;
-    city: string;
-    state: string;
-    address: string;
-    createdDaysAgo: number;
-    usage: AdminUsageStats;
-  }> = [
-    {
-      id: 'shop-imperial',
-      name: 'Barbearia Imperial',
-      slug: 'barbearia-imperial',
-      owner: 'Roberto Imperial',
-      phone: '(11) 98888-1111',
-      email: 'contato@barbeariaimperial.com',
-      city: 'São Paulo',
-      state: 'SP',
-      address: 'Av. Paulista, 1000 - Bela Vista',
-      createdDaysAgo: 190,
-      usage: { professionals: 5, customers: 412, services: 8, appointments: 1284 },
-    },
-    {
-      id: 'shop-navalha',
-      name: 'Navalha de Ouro',
-      slug: 'navalha-de-ouro',
-      owner: 'Marcos Aurélio',
-      phone: '(21) 97777-2222',
-      email: 'contato@navalhadeouro.com',
-      city: 'Rio de Janeiro',
-      state: 'RJ',
-      address: 'Rua Barata Ribeiro, 320 - Copacabana',
-      createdDaysAgo: 120,
-      usage: { professionals: 3, customers: 268, services: 6, appointments: 742 },
-    },
-    {
-      id: 'shop-dompedro',
-      name: 'Barbearia Dom Pedro',
-      slug: 'barbearia-dom-pedro',
-      owner: 'Pedro Henrique Alves',
-      phone: '(31) 96666-3333',
-      email: 'dompedro@barbearia.com',
-      city: 'Belo Horizonte',
-      state: 'MG',
-      address: 'Av. Afonso Pena, 45 - Centro',
-      createdDaysAgo: 62,
-      usage: { professionals: 2, customers: 134, services: 5, appointments: 388 },
-    },
-    {
-      id: 'shop-vintage',
-      name: 'Vintage Barber Club',
-      slug: 'vintage-barber-club',
-      owner: 'Ricardo Santos',
-      phone: '(41) 95555-4444',
-      email: 'contato@vintagebarber.com',
-      city: 'Curitiba',
-      state: 'PR',
-      address: 'Rua XV de Novembro, 780 - Centro',
-      createdDaysAgo: 24,
-      usage: { professionals: 4, customers: 96, services: 7, appointments: 214 },
-    },
-    {
-      id: 'shop-corte-nobre',
-      name: 'Corte Nobre',
-      slug: 'corte-nobre',
-      owner: 'Anderson Lima',
-      phone: '(51) 94444-5555',
-      email: 'contato@cortenobre.com',
-      city: 'Porto Alegre',
-      state: 'RS',
-      address: 'Av. Ipiranga, 2200 - Praia de Belas',
-      createdDaysAgo: 12,
-      usage: { professionals: 1, customers: 38, services: 4, appointments: 71 },
-    },
-    {
-      id: 'shop-barba-negra',
-      name: 'Barba Negra',
-      slug: 'barba-negra',
-      owner: 'Thiago Moreira',
-      phone: '(71) 93333-6666',
-      email: 'contato@barbanegra.com',
-      city: 'Salvador',
-      state: 'BA',
-      address: 'Rua Chile, 15 - Comércio',
-      createdDaysAgo: 310,
-      usage: { professionals: 6, customers: 520, services: 9, appointments: 1630 },
-    },
-    {
-      id: 'shop-old-school',
-      name: 'Old School Barbearia',
-      slug: 'old-school-barbearia',
-      owner: 'Fernando Dias',
-      phone: '(85) 92222-7777',
-      email: 'contato@oldschoolbarber.com',
-      city: 'Fortaleza',
-      state: 'CE',
-      address: 'Av. Beira Mar, 900 - Meireles',
-      createdDaysAgo: 240,
-      usage: { professionals: 3, customers: 289, services: 6, appointments: 905 },
-    },
-    {
-      id: 'shop-elite',
-      name: 'Elite Barber Studio',
-      slug: 'elite-barber-studio',
-      owner: 'Gustavo Prado',
-      phone: '(62) 91111-8888',
-      email: 'contato@elitebarber.com',
-      city: 'Goiânia',
-      state: 'GO',
-      address: 'Av. T-63, 1200 - Setor Bueno',
-      createdDaysAgo: 5,
-      usage: { professionals: 2, customers: 12, services: 3, appointments: 19 },
-    },
-  ];
-
-  const shops: Barbershop[] = base.map((b) => ({
-    id: b.id,
-    name: b.name,
-    slug: b.slug,
-    ownerId: `owner-${b.id}`,
-    phone: b.phone,
-    whatsapp: b.phone,
-    email: b.email,
-    city: b.city,
-    state: b.state,
-    address: b.address,
-    description: '',
-    active: true,
-    createdAt: iso(-b.createdDaysAgo),
-  }));
-
-  const owners: OwnerMap = {};
-  const usage: UsageMap = {};
-  base.forEach((b) => {
-    owners[b.id] = b.owner;
-    usage[b.id] = b.usage;
-  });
-
-  // A barbearia real do mockStore (a que o dono usa no /dashboard) entra na lista.
-  const local = mockStore.getBarbershop();
-  shops.unshift(local);
-  owners[local.id] = mockStore.getAccount()?.ownerName || 'Responsável';
-  usage[local.id] = {
-    professionals: mockStore.getProfessionals().length,
-    customers: mockStore.getCustomers().length,
-    services: mockStore.getServices().length,
-    appointments: mockStore.getAppointments().length,
-  };
-
-  return { shops, owners, usage };
-}
-
-function seedSubscriptions(shops: Barbershop[]): Subscription[] {
-  const [starter, pro, premium] = mockSaaSPlans;
-  const plan = (id: string) => id;
-
-  const config: Record<string, { planId: string; status: SubscriptionStatus; start: number; end: number }> = {
-    'shop-imperial': { planId: plan(pro.id), status: 'ACTIVE', start: 25, end: 5 },
-    'shop-navalha': { planId: plan(premium.id), status: 'ACTIVE', start: 28, end: 2 },
-    'shop-dompedro': { planId: plan(starter.id), status: 'EXPIRED', start: 40, end: -10 },
-    'shop-vintage': { planId: plan(pro.id), status: 'TRIAL', start: 10, end: 4 },
-    'shop-corte-nobre': { planId: plan(starter.id), status: 'TRIAL', start: 12, end: 0 },
-    'shop-barba-negra': { planId: plan(premium.id), status: 'SUSPENDED', start: 60, end: -3 },
-    'shop-old-school': { planId: plan(pro.id), status: 'CANCELLED', start: 90, end: -25 },
-    'shop-elite': { planId: plan(starter.id), status: 'ACTIVE', start: 5, end: 25 },
-  };
-
-  return shops.map((shop) => {
-    const c = config[shop.id];
-    if (c) return makeSubscription(shop.id, c.planId, c.status, c.start, c.end);
-    // Barbearia local: assinatura Pro ativa com 20 dias restantes.
-    return makeSubscription(shop.id, pro.id, 'ACTIVE', 10, 20);
-  });
 }
 
 class AdminDataStore {
@@ -260,17 +58,21 @@ class AdminDataStore {
     }
   }
 
-  /** Cria os dados iniciais na primeira visita ao painel. */
+  /**
+   * Prepara o armazenamento na primeira visita.
+   * Cria apenas os planos padrão — a plataforma começa SEM nenhuma barbearia.
+   */
   private ensureSeeded(): void {
     if (typeof window === 'undefined') return;
     if (localStorage.getItem(KEYS.BARBERSHOPS)) return;
 
-    const { shops, owners, usage } = seedBarbershops();
-    this.write(KEYS.BARBERSHOPS, shops);
-    this.write(KEYS.OWNERS, owners);
-    this.write(KEYS.USAGE, usage);
-    this.write(KEYS.PLANS, mockSaaSPlans);
-    this.write(KEYS.SUBSCRIPTIONS, seedSubscriptions(shops));
+    this.write(KEYS.BARBERSHOPS, []);
+    this.write(KEYS.OWNERS, {});
+    this.write(KEYS.USAGE, {});
+    this.write(KEYS.SUBSCRIPTIONS, []);
+    if (!localStorage.getItem(KEYS.PLANS)) {
+      this.write(KEYS.PLANS, mockSaaSPlans);
+    }
   }
 
   // ---------- PLANOS ----------
@@ -340,7 +142,7 @@ class AdminDataStore {
     return shops.map((barbershop) => {
       const subscription =
         subs.find((s) => s.barbershopId === barbershop.id) ||
-        makeSubscription(barbershop.id, plans[0]?.id || 'p1', 'TRIAL', 0, 14);
+        this.buildSubscription(barbershop.id, plans[0]?.id || mockSaaSPlans[0].id, 14);
       const plan = plans.find((p) => p.id === subscription.planId) || plans[0];
 
       return {
@@ -456,6 +258,66 @@ class AdminDataStore {
     return { success: true };
   }
 
+  /** Monta uma assinatura nova em período de teste. */
+  private buildSubscription(barbershopId: string, planId: string, trialDays: number): Subscription {
+    const now = new Date().toISOString();
+    const endsAt = iso(trialDays);
+    return {
+      id: `sub-${barbershopId}`,
+      barbershopId,
+      planId,
+      status: 'TRIAL',
+      startsAt: now,
+      trialEndsAt: endsAt,
+      currentPeriodEnd: endsAt,
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
+  /**
+   * Registra no painel administrativo uma barbearia criada pelo cadastro
+   * público (/onboarding), já com período de teste. Se a barbearia já estiver
+   * registrada, apenas atualiza os dados cadastrais.
+   */
+  registerFromOnboarding(barbershop: Barbershop, ownerName: string, trialDays = 14): AdminBarbershopRow {
+    const shops = this.listBarbershopsRaw();
+    const existing = shops.findIndex((b) => b.id === barbershop.id);
+
+    if (existing === -1) {
+      this.write(KEYS.BARBERSHOPS, [barbershop, ...shops]);
+    } else {
+      shops[existing] = { ...shops[existing], ...barbershop };
+      this.write(KEYS.BARBERSHOPS, shops);
+    }
+
+    const owners = this.listOwners();
+    owners[barbershop.id] = ownerName;
+    this.write(KEYS.OWNERS, owners);
+
+    const usage = this.listUsage();
+    if (!usage[barbershop.id]) {
+      usage[barbershop.id] = { professionals: 0, customers: 0, services: 0, appointments: 0 };
+      this.write(KEYS.USAGE, usage);
+    }
+
+    const subs = this.listSubscriptions();
+    if (!subs.some((sub) => sub.barbershopId === barbershop.id)) {
+      const plans = this.listPlans().filter((pl) => pl.active);
+      const planId = plans[0]?.id || mockSaaSPlans[0].id;
+      this.write(KEYS.SUBSCRIPTIONS, [...subs, this.buildSubscription(barbershop.id, planId, trialDays)]);
+    }
+
+    return this.getRow(barbershop.id)!;
+  }
+
+  /** Mantém os contadores de uso da barbearia em dia com o que existe no painel dela. */
+  syncUsage(barbershopId: string, stats: AdminUsageStats): void {
+    const usage = this.listUsage();
+    usage[barbershopId] = stats;
+    this.write(KEYS.USAGE, usage);
+  }
+
   // ---------- ASSINATURAS (controle manual) ----------
   updateSubscription(barbershopId: string, patch: Partial<Subscription>): Subscription | null {
     const subs = this.listSubscriptions();
@@ -556,12 +418,14 @@ class AdminDataStore {
    * É o que a tela de bloqueio consulta.
    */
   getCurrentBarbershopRow(): AdminBarbershopRow | null {
-    const localId = mockStore.getBarbershop().id;
-    return this.getRow(localId) || this.getRow(mockBarbershop.id);
+    return this.getRow(mockStore.getBarbershop().id);
   }
 
-  /** Reseta os dados de demonstração do painel admin. */
-  resetSeed(): void {
+  /**
+   * Apaga TODAS as barbearias, assinaturas e planos do painel administrativo,
+   * voltando a plataforma ao estado inicial (planos padrão, zero barbearias).
+   */
+  resetAll(): void {
     if (typeof window === 'undefined') return;
     Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
     this.ensureSeeded();

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, Users, Calendar, Award, Scissors, ArrowUpRight, Plus } from 'lucide-react';
+import { DollarSign, Users, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+
 import { mockStore } from '@/lib/store/mockStore';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { Appointment, Professional } from '@/types';

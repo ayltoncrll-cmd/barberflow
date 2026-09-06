@@ -67,8 +67,6 @@ export interface Session {
   name: string;
 }
 
-const FICTITIOUS_NAMES = ['Felipe Alcantara', 'Guilherme Rocha', 'Rodrigo Santoro'];
-
 class BarberFlowStore {
   private getStorage<T>(key: string, defaultVal: T): T {
     if (typeof window === 'undefined') return defaultVal;
@@ -280,8 +278,7 @@ class BarberFlowStore {
 
   // CUSTOMERS
   getCustomers(): Customer[] {
-    const raw = this.getStorage(STORAGE_KEYS.CUSTOMERS, mockCustomers);
-    return raw.filter((c) => !FICTITIOUS_NAMES.includes(c.name));
+    return this.getStorage(STORAGE_KEYS.CUSTOMERS, mockCustomers);
   }
 
   findOrCreateCustomer(name: string, phone: string, whatsapp?: string): Customer {
@@ -314,11 +311,7 @@ class BarberFlowStore {
 
   // APPOINTMENTS
   getAppointments(): Appointment[] {
-    const raw = this.getStorage(STORAGE_KEYS.APPOINTMENTS, mockAppointments);
-    return raw.filter((app) => 
-      !['app-1', 'app-2', 'app-3'].includes(app.id) && 
-      !FICTITIOUS_NAMES.includes(app.customerName || '')
-    );
+    return this.getStorage(STORAGE_KEYS.APPOINTMENTS, mockAppointments);
   }
 
   createAppointment(payload: {

@@ -2,17 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { 
-  CheckCircle2, 
-  Calendar as CalendarIcon, 
-  Clock, 
-  MapPin, 
-  Phone, 
-  Scissors, 
-  UserCheck, 
-  MessageSquare, 
-  Share2,
-  Sparkles
+import {
+  CheckCircle2,
+  Clock,
+  MapPin,
+  Scissors,
+  UserCheck,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { mockStore } from '@/lib/store/mockStore';

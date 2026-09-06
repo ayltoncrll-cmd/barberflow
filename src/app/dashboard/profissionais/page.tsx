@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Plus, Phone, Mail, Percent, Clock, Edit2, Shield, Award, Calendar, Save, Trash2 } from 'lucide-react';
+import { UserCheck, Plus, Phone, Percent, Clock, Edit2, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';

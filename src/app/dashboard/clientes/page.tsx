@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Phone, Calendar, Award, Search, Sparkles, DollarSign, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Users, Award, Search, Trash2 } from 'lucide-react';
+
 import { Badge } from '@/components/ui/Badge';
 import { mockStore } from '@/lib/store/mockStore';
 import { formatCurrency, formatDateBR } from '@/lib/utils/formatters';

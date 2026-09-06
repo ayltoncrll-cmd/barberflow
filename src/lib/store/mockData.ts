@@ -1,17 +1,21 @@
 import { Barbershop, Professional, Service, Customer, Appointment, ScheduleBlock, BusinessHour, ProfessionalSchedule, SaaSPlan, LoyaltyProgram } from '@/types';
 
+/**
+ * Barbearia ainda não configurada. Os campos são preenchidos pelo cadastro
+ * (/onboarding) ou em Configurações — nenhum dado fictício aqui.
+ */
 export const mockBarbershop: Barbershop = {
-  id: 'b1111111-1111-1111-1111-111111111111',
-  name: 'Sua Barbearia',
-  slug: 'sua-barbearia',
-  ownerId: 'u2222222-2222-2222-2222-222222222222',
-  phone: '(11) 99999-9999',
-  whatsapp: '(11) 99999-9999',
-  email: 'contato@suabarbearia.com',
-  city: 'Sua Cidade',
-  state: 'UF',
-  address: 'Rua Principal, 100 - Centro',
-  description: 'Barbearia moderna com agendamento online 24h.',
+  id: 'barbershop-local',
+  name: 'Minha Barbearia',
+  slug: 'minha-barbearia',
+  ownerId: 'owner-local',
+  phone: '',
+  whatsapp: '',
+  email: '',
+  city: '',
+  state: '',
+  address: '',
+  description: '',
   active: true,
   createdAt: new Date().toISOString(),
 };
@@ -43,7 +47,7 @@ export const mockLoyaltyProgram: LoyaltyProgram = {
   barbershopId: mockBarbershop.id,
   isActive: true,
   requiredStamps: 10,
-  rewardDescription: '1 Serviço Grátis ao completar 10 selos',
+  rewardDescription: 'Serviço grátis ao completar os selos',
 };
 
 export const mockSaaSPlans: SaaSPlan[] = [

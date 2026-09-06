@@ -1,21 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Calendar as CalendarIcon, 
-  Filter, 
-  Plus, 
-  Clock, 
-  User, 
-  Scissors, 
-  DollarSign, 
-  CheckCircle2, 
-  XCircle, 
-  AlertCircle,
-  ChevronLeft,
-  ChevronRight,
+import {
+  Calendar as CalendarIcon,
+  Filter,
+  Plus,
+  Clock,
   Phone,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';

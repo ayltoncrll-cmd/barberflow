@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Lock, MessageSquare, Copy, Check, Share2, Plus, Sparkles } from 'lucide-react';
+import { Clock, Lock, MessageSquare, Copy, Check, Share2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { mockStore } from '@/lib/store/mockStore';
@@ -15,7 +15,7 @@ export default function MeuHorarioPage() {
   const [copied, setCopied] = useState(false);
 
   // Horário vago generator states
-  const [vagoProfName, setVagoProfName] = useState('João Silva');
+  const [vagoProfName, setVagoProfName] = useState('');
   const [vagoTime, setVagoTime] = useState('16:00');
   const [vagoService, setVagoService] = useState('Corte Tradicional');
 

@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scissors, CheckCircle2, ArrowRight, Building, Phone, MapPin, Clock, Sparkles, Lock, Eye, EyeOff, XCircle } from 'lucide-react';
+import { Scissors, CheckCircle2, ArrowRight, Building, Sparkles, Lock, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
 import { mockStore } from '@/lib/store/mockStore';
+import { adminData } from '@/lib/admin/adminData';
 import { isPasswordValid } from '@/lib/utils/password';
 
 export default function OnboardingPage() {
@@ -19,15 +20,15 @@ export default function OnboardingPage() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    name: 'Barbearia Vintage',
-    ownerName: 'Ricardo Santos',
-    phone: '(11) 99888-7766',
-    email: 'contato@barbeariavintage.com',
+    name: '',
+    ownerName: '',
+    phone: '',
+    email: '',
     password: '',
     confirmPassword: '',
-    city: 'São Paulo',
-    state: 'SP',
-    address: 'Rua Augusta, 500 - Consolação',
+    city: '',
+    state: '',
+    address: '',
     openTime: '08:00',
     closeTime: '20:00',
   });
@@ -66,16 +67,22 @@ export default function OnboardingPage() {
         password: formData.password,
         ownerName: formData.ownerName,
       });
-      mockStore.updateBarbershop({
+
+      const barbershop = mockStore.updateBarbershop({
         name: formData.name,
         slug: slug || 'minha-barbearia',
         phone: formData.phone,
         whatsapp: formData.phone,
         email: formData.email,
         city: formData.city,
-        state: formData.state,
+        state: formData.state.toUpperCase(),
         address: formData.address,
       });
+
+      // A barbearia passa a existir no painel do dono do SaaS, em periodo de teste.
+      adminData.registerFromOnboarding(barbershop, formData.ownerName);
+
+      mockStore.setSession({ role: 'OWNER', email: formData.email, name: formData.ownerName });
       setIsLoading(false);
       router.push('/dashboard');
     }, 800);
