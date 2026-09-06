@@ -332,10 +332,6 @@ export default function SaaSPage() {
             <span>© 2026. Todos os direitos reservados.</span>
           </div>
           <div className="flex items-center space-x-6">
-            <Link href="/admin" className="hover:text-amber-400 transition-colors text-xs font-semibold uppercase tracking-wider">
-              Área do Super Admin SaaS
-            </Link>
-            <span className="text-slate-700">|</span>
             <span className="text-xs text-slate-500">Desenvolvido em Next.js & Supabase</span>
           </div>
         </div>
