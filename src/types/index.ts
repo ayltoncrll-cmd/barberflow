@@ -8,7 +8,7 @@ export type AppointmentStatus =
   | 'CANCELLED' 
   | 'NO_SHOW';
 
-export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'SUSPENDED' | 'CANCELLED';
 
 export interface Profile {
   id: string;
@@ -150,10 +150,16 @@ export interface LoyaltyProgram {
 export interface SaaSPlan {
   id: string;
   name: string;
-  code: 'STARTER' | 'PRO' | 'PREMIUM';
+  code: string;
+  description?: string;
   price: number;
+  /** Duração padrão em dias usada nas renovações. */
+  durationDays: number;
+  /** Use 999 ou mais para representar profissionais ilimitados. */
   maxProfessionals: number;
   features: string[];
+  active: boolean;
+  createdAt: string;
 }
 
 export interface Subscription {
@@ -161,6 +167,30 @@ export interface Subscription {
   barbershopId: string;
   planId: string;
   status: SubscriptionStatus;
+  /** Início do período vigente. */
+  startsAt: string;
   trialEndsAt: string;
+  /** Vencimento do período vigente (expires_at no banco). */
   currentPeriodEnd: string;
+  /** Observações administrativas do dono do SaaS. */
+  adminNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Barbearia + assinatura + plano, já resolvidos para as telas do admin. */
+export interface AdminBarbershopRow {
+  barbershop: Barbershop;
+  subscription: Subscription;
+  plan: SaaSPlan;
+  ownerName: string;
+  daysRemaining: number;
+  hasAccess: boolean;
+}
+
+export interface AdminUsageStats {
+  professionals: number;
+  customers: number;
+  services: number;
+  appointments: number;
 }

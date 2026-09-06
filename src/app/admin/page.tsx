@@ -1,175 +1,227 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { 
-  ShieldCheck, 
-  Building, 
-  Users, 
-  DollarSign, 
-  TrendingUp, 
-  Search, 
-  Scissors, 
-  CheckCircle2, 
-  AlertCircle,
-  ExternalLink,
-  ArrowLeft
+import {
+  Building2,
+  CheckCircle2,
+  Clock3,
+  AlertTriangle,
+  PauseCircle,
+  XCircle,
+  TrendingUp,
+  CalendarClock,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { mockStore } from '@/lib/store/mockStore';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { adminData } from '@/lib/admin/adminData';
+import { formatCurrency, formatDateBR } from '@/lib/utils/formatters';
+import { StatCard, StatusBadge, ExpiryBadge, AdminLoading, EmptyState } from '@/components/admin/AdminUI';
 
-export default function SuperAdminPage() {
-  const [search, setSearch] = useState('');
-  const [shop, setShop] = useState(mockStore.getBarbershop());
-  const [profsCount, setProfsCount] = useState(0);
-  const [appsCount, setAppsCount] = useState(0);
+type Metrics = ReturnType<typeof adminData.getDashboardMetrics>;
+
+export default function AdminDashboardPage() {
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
-    const s = mockStore.getBarbershop();
-    setShop(s);
-    setProfsCount(mockStore.getProfessionals().length);
-    setAppsCount(mockStore.getAppointments().length);
+    setMetrics(adminData.getDashboardMetrics());
   }, []);
 
-  const tenants = [
-    {
-      id: shop.id,
-      name: shop.name,
-      slug: shop.slug,
-      owner: 'Proprietário',
-      plan: 'Pro',
-      price: 129.90,
-      status: 'ACTIVE',
-      professionalsCount: profsCount,
-      appointmentsMonth: appsCount,
-      createdAt: shop.createdAt,
-    },
-  ];
-
-  const filteredTenants = tenants.filter(
-    (t) => t.name.toLowerCase().includes(search.toLowerCase()) || t.owner.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const mrr = tenants.reduce((acc, curr) => acc + (curr.status === 'ACTIVE' ? curr.price : 0), 0);
+  if (!metrics) return <AdminLoading label="Carregando métricas da plataforma..." />;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 lg:p-10 space-y-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-6 rounded-2xl border border-purple-500/30">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
-              Super Admin SaaS
-            </span>
+    <div className="space-y-8">
+      <header>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold uppercase tracking-wider border border-purple-500/30">
+            Administração BarberFlow
+          </span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Visão geral da plataforma</h1>
+        <p className="text-sm text-slate-400 mt-1">
+          Situação de todas as barbearias, assinaturas e vencimentos do BarberFlow.
+        </p>
+      </header>
+
+      {/* Cards principais */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+        <StatCard
+          label="Barbearias cadastradas"
+          value={metrics.total}
+          hint={`${metrics.newLast30Days} novas nos últimos 30 dias`}
+          icon={Building2}
+          accent="purple"
+        />
+        <StatCard
+          label="Assinaturas ativas"
+          value={metrics.active}
+          hint={`Receita recorrente: ${formatCurrency(metrics.mrr)}`}
+          icon={CheckCircle2}
+          accent="emerald"
+        />
+        <StatCard
+          label="Em período de teste"
+          value={metrics.trial}
+          hint="Contas ainda no trial"
+          icon={Clock3}
+          accent="blue"
+        />
+        <StatCard
+          label="Assinaturas vencidas"
+          value={metrics.expired}
+          hint="Acesso bloqueado ao painel"
+          icon={AlertTriangle}
+          accent="red"
+        />
+        <StatCard
+          label="Contas suspensas"
+          value={metrics.suspended}
+          hint="Suspensas pela administração"
+          icon={PauseCircle}
+          accent="gold"
+        />
+        <StatCard
+          label="Assinaturas canceladas"
+          value={metrics.cancelled}
+          hint="Dados preservados"
+          icon={XCircle}
+          accent="slate"
+        />
+      </section>
+
+      {/* Alertas de vencimento */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="glass-card p-5 rounded-2xl border border-red-500/30 bg-red-500/5">
+          <span className="text-xs font-semibold text-red-300 uppercase tracking-wider">Vencendo hoje</span>
+          <div className="text-3xl font-extrabold text-red-400 mt-2">{metrics.expiringToday}</div>
+        </div>
+        <div className="glass-card p-5 rounded-2xl border border-amber-500/30 bg-amber-500/5">
+          <span className="text-xs font-semibold text-amber-300 uppercase tracking-wider">Próximos 3 dias</span>
+          <div className="text-3xl font-extrabold text-amber-400 mt-2">{metrics.expiringIn3Days}</div>
+        </div>
+        <div className="glass-card p-5 rounded-2xl border border-blue-500/30 bg-blue-500/5">
+          <span className="text-xs font-semibold text-blue-300 uppercase tracking-wider">Próximos 7 dias</span>
+          <div className="text-3xl font-extrabold text-blue-400 mt-2">{metrics.expiringIn7Days}</div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Vencendo em breve */}
+        <section className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-3">
+            <h2 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+              <CalendarClock className="w-4 h-4 text-amber-400" /> Assinaturas próximas do vencimento
+            </h2>
+            <Link href="/admin/assinaturas" className="text-xs text-purple-400 hover:underline font-semibold shrink-0">
+              Ver todas
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-purple-400" /> Painel de Administração BarberFlow
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Métricas da plataforma SaaS, tenants cadastrados, assinaturas e receita recorrente (MRR).
-          </p>
-        </div>
-        <Link href="/dashboard">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="w-4 h-4" /> Voltar ao Dashboard da Barbearia
-          </Button>
-        </Link>
+          {metrics.expiringSoon.length === 0 ? (
+            <EmptyState message="Nenhuma assinatura vence nos próximos 7 dias." />
+          ) : (
+            <ul className="divide-y divide-slate-800/80">
+              {metrics.expiringSoon.slice(0, 6).map((row) => (
+                <li key={row.barbershop.id}>
+                  <Link
+                    href={`/admin/barbearias/${row.barbershop.id}`}
+                    className="flex items-center justify-between gap-3 p-4 hover:bg-slate-900/40 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-white text-sm truncate">{row.barbershop.name}</div>
+                      <div className="text-xs text-slate-500 truncate">
+                        {row.plan?.name} · vence em {formatDateBR(row.subscription.currentPeriodEnd)}
+                      </div>
+                    </div>
+                    <ExpiryBadge daysRemaining={row.daysRemaining} hasAccess={row.hasAccess} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Vencidas recentemente */}
+        <section className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="p-5 border-b border-slate-800">
+            <h2 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+              <AlertTriangle className="w-4 h-4 text-red-400" /> Vencidas recentemente
+            </h2>
+          </div>
+          {metrics.recentlyExpired.length === 0 ? (
+            <EmptyState message="Nenhuma assinatura vencida nos últimos 30 dias." />
+          ) : (
+            <ul className="divide-y divide-slate-800/80">
+              {metrics.recentlyExpired.slice(0, 6).map((row) => (
+                <li key={row.barbershop.id}>
+                  <Link
+                    href={`/admin/barbearias/${row.barbershop.id}`}
+                    className="flex items-center justify-between gap-3 p-4 hover:bg-slate-900/40 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-white text-sm truncate">{row.barbershop.name}</div>
+                      <div className="text-xs text-slate-500 truncate">{row.ownerName}</div>
+                    </div>
+                    <StatusBadge status={row.subscription.status} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
 
-      {/* SaaS Platform KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-        <div className="glass-card p-6 rounded-2xl border border-slate-800">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Receita Recorrente (MRR)</span>
-          <div className="text-3xl font-extrabold text-purple-400 mt-2 font-mono">{formatCurrency(mrr)}</div>
-          <div className="text-xs text-purple-300 mt-2 font-medium">Plano Pro Ativo</div>
-        </div>
-
-        <div className="glass-card p-6 rounded-2xl border border-slate-800">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Barbearias Cadastradas</span>
-          <div className="text-3xl font-extrabold text-white mt-2">{tenants.length} tenant</div>
-          <div className="text-xs text-emerald-400 mt-2">Ambiente isolado ativo</div>
-        </div>
-
-        <div className="glass-card p-6 rounded-2xl border border-slate-800">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Barbeiros Ativos no SaaS</span>
-          <div className="text-3xl font-extrabold text-white mt-2">{profsCount} barbeiros</div>
-          <div className="text-xs text-slate-400 mt-2">Cadastrados no seu tenant</div>
-        </div>
-
-        <div className="glass-card p-6 rounded-2xl border border-slate-800">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Assinatura do Tenant</span>
-          <div className="text-3xl font-extrabold text-emerald-400 mt-2 font-mono">Plano Pro</div>
-          <div className="text-xs text-emerald-400 mt-2">Ativo e regular</div>
-        </div>
-      </div>
-
-      {/* Tenants Table */}
-      <div className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Building className="w-5 h-5 text-purple-400" /> Barbearias / Tenants Cadastrados
+      {/* Últimas barbearias cadastradas */}
+      <section className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-3">
+          <h2 className="font-bold text-white flex items-center gap-2 text-sm sm:text-base">
+            <Sparkles className="w-4 h-4 text-purple-400" /> Últimas barbearias cadastradas
           </h2>
-          <div className="relative max-w-xs w-full">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar barbearia..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-100 focus:outline-none focus:border-purple-500"
-            />
-          </div>
+          <Link href="/admin/barbearias" className="text-xs text-purple-400 hover:underline font-semibold shrink-0">
+            Ver todas
+          </Link>
         </div>
-
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-900/90 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-900/60 text-[11px] font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
               <tr>
                 <th className="p-4">Barbearia</th>
-                <th className="p-4">Dono / Responsável</th>
+                <th className="p-4 hidden sm:table-cell">Responsável</th>
+                <th className="p-4 hidden md:table-cell">Cidade</th>
                 <th className="p-4">Plano</th>
-                <th className="p-4">Status Assinatura</th>
-                <th className="p-4">Barbeiros</th>
-                <th className="p-4">Agendamentos</th>
-                <th className="p-4">Link Público</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 hidden lg:table-cell">Cadastro</th>
+                <th className="p-4" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {filteredTenants.map((t) => (
-                <tr key={t.id} className="hover:bg-slate-900/40">
-                  <td className="p-4 font-bold text-white flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-xs">
-                      {t.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    {t.name}
+              {metrics.recentShops.map((row) => (
+                <tr key={row.barbershop.id} className="hover:bg-slate-900/40">
+                  <td className="p-4 font-semibold text-white">{row.barbershop.name}</td>
+                  <td className="p-4 text-slate-300 hidden sm:table-cell">{row.ownerName}</td>
+                  <td className="p-4 text-slate-400 hidden md:table-cell">
+                    {row.barbershop.city}/{row.barbershop.state}
                   </td>
-                  <td className="p-4 text-slate-300">{t.owner}</td>
+                  <td className="p-4 text-amber-400 font-semibold">{row.plan?.name}</td>
                   <td className="p-4">
-                    <span className="font-bold text-amber-400">{t.plan}</span> ({formatCurrency(t.price)}/mês)
+                    <StatusBadge status={row.subscription.status} />
                   </td>
-                  <td className="p-4">
-                    <Badge variant="emerald">Ativo</Badge>
+                  <td className="p-4 text-slate-400 font-mono text-xs hidden lg:table-cell">
+                    {formatDateBR(row.barbershop.createdAt)}
                   </td>
-                  <td className="p-4 font-mono font-semibold text-slate-200">{t.professionalsCount}</td>
-                  <td className="p-4 font-mono font-semibold text-slate-200">{t.appointmentsMonth}</td>
-                  <td className="p-4">
-                    <a
-                      href={`/barbearia/${t.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-amber-400 hover:underline flex items-center gap-1 text-xs font-semibold"
+                  <td className="p-4 text-right">
+                    <Link
+                      href={`/admin/barbearias/${row.barbershop.id}`}
+                      className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap"
                     >
-                      Ver Página <ExternalLink className="w-3 h-3" />
-                    </a>
+                      Detalhes <ArrowRight className="w-3 h-3" />
+                    </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Calendar, 
@@ -17,9 +17,11 @@ import {
   X,
   LogOut,
   Sparkles,
-  Award
+  Award,
+  Loader2
 } from 'lucide-react';
 import { mockBarbershop } from '@/lib/store/mockData';
+import { adminData } from '@/lib/admin/adminData';
 
 const navItems = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard },
@@ -34,7 +36,28 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+
+  // Bloqueio por assinatura: status + datas decidem o acesso (nunca só a data).
+  useEffect(() => {
+    const row = adminData.getCurrentBarbershopRow();
+    if (row && !row.hasAccess) {
+      router.replace('/assinatura-indisponivel');
+      return;
+    }
+    setAccessChecked(true);
+  }, [router]);
+
+  if (!accessChecked) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-slate-950 text-slate-400">
+        <Loader2 className="w-7 h-7 animate-spin text-amber-400" />
+        <span className="text-sm">Verificando sua assinatura...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-100 selection:bg-amber-500 selection:text-slate-950">

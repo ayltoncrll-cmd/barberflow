@@ -34,13 +34,37 @@ const STORAGE_KEYS = {
   PROFESSIONAL_SCHEDULES: 'barberflow_prof_schedules',
   HOLIDAYS: 'barberflow_holidays',
   ACCOUNT: 'barberflow_account',
+  ADMIN: 'barberflow_admin',
+  SESSION: 'barberflow_session',
 };
+
+/** Credenciais padrao do administrador geral do SaaS (primeiro acesso). */
+export const DEFAULT_ADMIN_EMAIL = 'admin@barberflow.com';
+export const DEFAULT_ADMIN_PASSWORD = 'BarberFlow@2026';
 
 export interface StoredAccount {
   email: string;
   password: string;
   ownerName: string;
   createdAt: string;
+}
+
+export interface AdminAccount {
+  email: string;
+  password: string;
+  name: string;
+  /** Forca a troca de senha no primeiro acesso, enquanto a senha padrao nao for alterada. */
+  mustChangePassword: boolean;
+  createdAt: string;
+  passwordChangedAt?: string;
+}
+
+export type SessionRole = 'ADMIN' | 'OWNER';
+
+export interface Session {
+  role: SessionRole;
+  email: string;
+  name: string;
 }
 
 const FICTITIOUS_NAMES = ['Felipe Alcantara', 'Guilherme Rocha', 'Rodrigo Santoro'];
@@ -70,6 +94,59 @@ class BarberFlowStore {
     Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k));
   }
 
+  // ADMIN GERAL DO SAAS
+  getAdmin(): AdminAccount {
+    const stored = this.getStorage<AdminAccount | null>(STORAGE_KEYS.ADMIN, null);
+    if (stored) return stored;
+    return {
+      email: DEFAULT_ADMIN_EMAIL,
+      password: DEFAULT_ADMIN_PASSWORD,
+      name: 'Administrador BarberFlow',
+      mustChangePassword: true,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  changeAdminPassword(currentPassword: string, newPassword: string): { success: boolean; message?: string } {
+    const admin = this.getAdmin();
+    if (admin.password !== currentPassword) {
+      return { success: false, message: 'A senha atual esta incorreta.' };
+    }
+    if (newPassword === currentPassword) {
+      return { success: false, message: 'A nova senha precisa ser diferente da senha atual.' };
+    }
+    const updated: AdminAccount = {
+      ...admin,
+      password: newPassword,
+      mustChangePassword: false,
+      passwordChangedAt: new Date().toISOString(),
+    };
+    this.setStorage(STORAGE_KEYS.ADMIN, updated);
+    const session = this.getSession();
+    if (session?.role === 'ADMIN') {
+      this.setSession({ ...session, email: updated.email });
+    }
+    return { success: true };
+  }
+
+  // SESSAO (mock: vive apenas no navegador)
+  getSession(): Session | null {
+    return this.getStorage<Session | null>(STORAGE_KEYS.SESSION, null);
+  }
+
+  setSession(session: Session): void {
+    this.setStorage(STORAGE_KEYS.SESSION, session);
+  }
+
+  clearSession(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
+  }
+
+  isAdminLogged(): boolean {
+    return this.getSession()?.role === 'ADMIN';
+  }
+
   // ACCOUNT (credenciais de acesso do dono da barbearia)
   getAccount(): StoredAccount | null {
     return this.getStorage<StoredAccount | null>(STORAGE_KEYS.ACCOUNT, null);
@@ -81,15 +158,32 @@ class BarberFlowStore {
     return stored;
   }
 
-  authenticate(email: string, password: string): { success: boolean; message?: string } {
+  authenticate(
+    email: string,
+    password: string
+  ): { success: boolean; message?: string; role?: SessionRole; mustChangePassword?: boolean } {
+    const normalized = email.trim().toLowerCase();
+
+    // 1. Administrador geral do SaaS tem prioridade sobre a conta da barbearia.
+    const admin = this.getAdmin();
+    if (admin.email.trim().toLowerCase() === normalized) {
+      if (admin.password !== password) {
+        return { success: false, message: 'E-mail ou senha inválidos.' };
+      }
+      this.setSession({ role: 'ADMIN', email: admin.email, name: admin.name });
+      return { success: true, role: 'ADMIN', mustChangePassword: admin.mustChangePassword };
+    }
+
+    // 2. Conta do dono da barbearia criada no onboarding.
     const account = this.getAccount();
     if (!account) {
       return { success: false, message: 'Nenhuma conta cadastrada neste navegador. Cadastre sua barbearia primeiro.' };
     }
-    if (account.email.trim().toLowerCase() !== email.trim().toLowerCase() || account.password !== password) {
+    if (account.email.trim().toLowerCase() !== normalized || account.password !== password) {
       return { success: false, message: 'E-mail ou senha inválidos.' };
     }
-    return { success: true };
+    this.setSession({ role: 'OWNER', email: account.email, name: account.ownerName });
+    return { success: true, role: 'OWNER' };
   }
 
   // BARBERSHOP

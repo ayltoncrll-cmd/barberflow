@@ -3,16 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Scissors, ShieldCheck, UserCheck, Key, ArrowRight, CheckCircle2, Eye, EyeOff, XCircle } from 'lucide-react';
+import { Scissors, ShieldCheck, UserCheck, Key, ArrowRight, CheckCircle2, XCircle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { mockStore } from '@/lib/store/mockStore';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { mockStore, DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '@/lib/store/mockStore';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('dono@barbeariaimperial.com');
   const [password, setPassword] = useState('123456');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const handleLogin = (e: React.FormEvent) => {
@@ -21,27 +21,45 @@ export default function LoginPage() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      const account = mockStore.getAccount();
-      // Só valida credenciais se o dono já criou uma senha no cadastro.
-      if (account) {
-        const result = mockStore.authenticate(email, password);
-        if (!result.success) {
-          setError(result.message || 'Não foi possível entrar.');
+      const result = mockStore.authenticate(email, password);
+
+      if (!result.success) {
+        // Sem conta de barbearia cadastrada, o acesso do dono segue liberado (modo demo).
+        if (!mockStore.getAccount()) {
+          mockStore.setSession({ role: 'OWNER', email, name: 'Dono / Gerente' });
+          router.push('/dashboard');
           return;
         }
+        setError(result.message || 'Não foi possível entrar.');
+        return;
+      }
+
+      if (result.role === 'ADMIN') {
+        router.push(result.mustChangePassword ? '/admin/trocar-senha' : '/admin');
+        return;
       }
       router.push('/dashboard');
     }, 600);
+  };
+
+  const fillAdminCredentials = () => {
+    setError('');
+    setEmail(DEFAULT_ADMIN_EMAIL);
+    setPassword(DEFAULT_ADMIN_PASSWORD);
   };
 
   const quickDemoAccess = (role: 'OWNER' | 'BARBER' | 'ADMIN') => {
     setIsLoading(true);
     setTimeout(() => {
       if (role === 'ADMIN') {
+        const admin = mockStore.getAdmin();
+        mockStore.setSession({ role: 'ADMIN', email: admin.email, name: admin.name });
         router.push('/admin');
       } else if (role === 'BARBER') {
+        mockStore.setSession({ role: 'OWNER', email: 'barbeiro@demo.com', name: 'Barbeiro' });
         router.push('/dashboard/agenda');
       } else {
+        mockStore.setSession({ role: 'OWNER', email: 'dono@demo.com', name: 'Dono / Gerente' });
         router.push('/dashboard');
       }
     }, 400);
@@ -112,25 +130,12 @@ export default function LoginPage() {
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Senha</label>
               <a href="#" className="text-xs text-amber-400 hover:underline">Esqueceu a senha?</a>
             </div>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                className="w-full px-4 pr-12 py-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors text-sm"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                className="absolute right-3.5 top-3.5 text-slate-500 hover:text-amber-400 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <PasswordInput
+              value={password}
+              onChange={setPassword}
+              autoComplete="current-password"
+              withIcon={false}
+            />
           </div>
 
           {error && (
@@ -142,6 +147,14 @@ export default function LoginPage() {
           <Button type="submit" variant="gold" className="w-full text-base py-3" isLoading={isLoading}>
             Entrar no Sistema <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
+
+          <button
+            type="button"
+            onClick={fillAdminCredentials}
+            className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-purple-300 hover:text-purple-200 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl py-2.5 transition-colors"
+          >
+            <ShieldAlert className="w-4 h-4" /> Preencher credenciais do Admin do SaaS
+          </button>
 
           <div className="pt-4 text-center text-xs text-slate-400 border-t border-slate-800">
             Ainda não tem uma conta?{' '}
