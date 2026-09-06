@@ -421,6 +421,41 @@ class AdminDataStore {
     return this.getRow(id)!;
   }
 
+  /**
+   * Exclui a barbearia e TUDO que depende dela (assinatura, responsável e
+   * estatísticas de uso). Diferente de suspender/cancelar, isto é irreversível.
+   *
+   * No Supabase o equivalente é DELETE em public.barbershops: as tabelas filhas
+   * têm ON DELETE CASCADE, então profissionais, serviços, clientes e
+   * agendamentos saem junto.
+   */
+  deleteBarbershop(barbershopId: string): { success: boolean; message?: string } {
+    const shops = this.listBarbershopsRaw();
+    const shop = shops.find((b) => b.id === barbershopId);
+    if (!shop) {
+      return { success: false, message: 'Barbearia não encontrada.' };
+    }
+
+    this.write(
+      KEYS.BARBERSHOPS,
+      shops.filter((b) => b.id !== barbershopId)
+    );
+    this.write(
+      KEYS.SUBSCRIPTIONS,
+      this.listSubscriptions().filter((sub) => sub.barbershopId !== barbershopId)
+    );
+
+    const owners = this.listOwners();
+    delete owners[barbershopId];
+    this.write(KEYS.OWNERS, owners);
+
+    const usage = this.listUsage();
+    delete usage[barbershopId];
+    this.write(KEYS.USAGE, usage);
+
+    return { success: true };
+  }
+
   // ---------- ASSINATURAS (controle manual) ----------
   updateSubscription(barbershopId: string, patch: Partial<Subscription>): Subscription | null {
     const subs = this.listSubscriptions();

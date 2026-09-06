@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search, Plus, ArrowRight, Building2, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, ArrowRight, Building2, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { adminData } from '@/lib/admin/adminData';
@@ -10,6 +10,7 @@ import { AdminBarbershopRow, SaaSPlan, SubscriptionStatus } from '@/types';
 import { formatDateBR } from '@/lib/utils/formatters';
 import { SUBSCRIPTION_STATUS_LABEL, dateInputToISO, isoToDateInput, addDays } from '@/lib/utils/subscription';
 import { StatusBadge, ExpiryBadge, AdminLoading, EmptyState, Toast, ToastState } from '@/components/admin/AdminUI';
+import { DeleteBarbershopModal } from '@/components/admin/DeleteBarbershopModal';
 
 type StatusFilter = 'ALL' | SubscriptionStatus;
 type SortOption = 'RECENT' | 'OLDEST' | 'EXPIRY_ASC' | 'EXPIRY_DESC';
@@ -38,6 +39,7 @@ export default function AdminBarbeariasPage() {
   const [sort, setSort] = useState<SortOption>('RECENT');
   const [toast, setToast] = useState<ToastState | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [toDelete, setToDelete] = useState<AdminBarbershopRow | null>(null);
 
   const reload = () => setRows(adminData.listRows());
 
@@ -216,13 +218,23 @@ export default function AdminBarbeariasPage() {
                         {row.hasAccess ? 'Liberada' : 'Bloqueada'}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
-                      <Link
-                        href={`/admin/barbearias/${row.barbershop.id}`}
-                        className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 text-xs font-semibold"
-                      >
-                        Ver detalhes <ArrowRight className="w-3 h-3" />
-                      </Link>
+                    <td className="p-4">
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/admin/barbearias/${row.barbershop.id}`}
+                          className="text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 text-xs font-semibold"
+                        >
+                          Ver detalhes <ArrowRight className="w-3 h-3" />
+                        </Link>
+                        <button
+                          onClick={() => setToDelete(row)}
+                          title={`Excluir ${row.barbershop.name}`}
+                          aria-label={`Excluir ${row.barbershop.name}`}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -240,6 +252,25 @@ export default function AdminBarbeariasPage() {
           setModalOpen(false);
           reload();
           setToast({ type: 'success', message: `Barbearia "${name}" cadastrada com sucesso.` });
+        }}
+      />
+
+      <DeleteBarbershopModal
+        isOpen={!!toDelete}
+        row={toDelete}
+        usage={toDelete ? adminData.getUsage(toDelete.barbershop.id) : null}
+        onClose={() => setToDelete(null)}
+        onConfirm={() => {
+          if (!toDelete) return;
+          const name = toDelete.barbershop.name;
+          const result = adminData.deleteBarbershop(toDelete.barbershop.id);
+          setToDelete(null);
+          reload();
+          setToast(
+            result.success
+              ? { type: 'success', message: `Barbearia "${name}" excluída.` }
+              : { type: 'error', message: result.message || 'Não foi possível excluir.' }
+          );
         }}
       />
     </div>

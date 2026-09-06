@@ -24,6 +24,7 @@ import {
   UserCheck,
   CalendarCheck,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -45,6 +46,7 @@ import {
   ToastState,
   AdminLoading,
 } from '@/components/admin/AdminUI';
+import { DeleteBarbershopModal } from '@/components/admin/DeleteBarbershopModal';
 
 const RENEW_OPTIONS = [30, 90, 180, 365];
 const GRANT_OPTIONS = [7, 15, 30];
@@ -62,6 +64,7 @@ export default function AdminBarbeariaDetalhePage() {
 
   const [renewOpen, setRenewOpen] = useState(false);
   const [grantOpen, setGrantOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirm, setConfirm] = useState<{
     title: string;
     message: React.ReactNode;
@@ -458,6 +461,35 @@ export default function AdminBarbeariaDetalhePage() {
           {(plan?.maxProfessionals || 0) >= 999 ? 'profissionais ilimitados' : `${plan?.maxProfessionals} profissionais`}.
         </p>
       </section>
+
+      {/* Zona de perigo */}
+      <section className="glass-panel p-5 sm:p-6 rounded-2xl border border-red-500/30 bg-red-500/5">
+        <h2 className="font-bold text-white flex items-center gap-2 mb-2">
+          <Trash2 className="w-4 h-4 text-red-400" /> Zona de perigo
+        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p className="text-sm text-slate-400 max-w-xl">
+            Excluir remove a barbearia, a assinatura e todos os dados operacionais de forma definitiva. Para
+            apenas bloquear o acesso mantendo tudo salvo, use <strong className="text-slate-200">Suspender</strong>{' '}
+            ou <strong className="text-slate-200">Cancelar</strong> acima.
+          </p>
+          <Button variant="danger" onClick={() => setDeleteOpen(true)} className="shrink-0">
+            <Trash2 className="w-4 h-4" /> Excluir barbearia
+          </Button>
+        </div>
+      </section>
+
+      <DeleteBarbershopModal
+        isOpen={deleteOpen}
+        row={row}
+        usage={usage}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={() => {
+          adminData.deleteBarbershop(id);
+          setDeleteOpen(false);
+          router.push('/admin/barbearias');
+        }}
+      />
 
       <RenewModal
         isOpen={renewOpen}
